@@ -13,5 +13,5 @@ target_link_libraries(${TARGET_NAME}
   ${CMAKE_DL_LIBS}
 )
 
-#set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "")
+set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "")
 setTargetOutputDirectory(${TARGET_NAME})

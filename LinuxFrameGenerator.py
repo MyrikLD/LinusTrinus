@@ -21,10 +21,10 @@ class FrameGenerator(Thread):
     def run(self):
         params = {
             'loglevel': 'error',
-            # 's': '1920x1080',
-            's': '640x480',
+            's': '1920x1080',
+            #'s': '640x480',
             'framerate': 60,
-            'i': ':8.0',
+            'i': ':0.0',
             # 'qmin:v': 19,
             'f': 'mjpeg',
             'vsync': 2,

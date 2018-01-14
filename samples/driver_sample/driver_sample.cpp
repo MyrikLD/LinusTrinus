@@ -37,9 +37,7 @@ struct TOpenTrack {
         double X;
         double Y;
         double Z;
-        double Yaw;
-        double Pitch;
-        double Roll;
+        double W;
 };
 TOpenTrack OpenTrack;
 
@@ -197,9 +195,32 @@ double DegToRad(double f) {
         return f * (3.14159265358979323846 / 180);
 }
 
+//void toQuaternion(TOpenTrack* data)
+//{
+//    double yaw = DegToRad(data->Yaw);
+//    double pitch = DegToRad(data->Pitch);
+//    double roll = DegToRad(data->Roll);
+
+//    double cy = cos(yaw * 0.5);
+//    double sy = sin(yaw * 0.5);
+//    double cr = cos(roll * 0.5);
+//    double sr = sin(roll * 0.5);
+//    double cp = cos(pitch * 0.5);
+//    double sp = sin(pitch * 0.5);
+
+//    qW = cy * cr * cp + sy * sr * sp;
+//    qX = cy * sr * cp - sy * cr * sp;
+//    qY = cy * cr * sp + sy * sr * cp;
+//    qZ = sy * cr * cp - cy * sr * sp;
+
+//    pX = data->X;
+//    pY = data->Y;
+//    pZ = data->Z;
+//}
+
 void WinSockReadFunc()
 {
-    DriverLog( "driver_null: Sock run\n");
+    DriverLog( "driver_sample: Sock run\n");
     while (SocketActivated) {
             //Read UDP socket with OpenTrack data
             bKeepReading = true;
@@ -207,22 +228,24 @@ void WinSockReadFunc()
                     memset(&OpenTrack, 0, sizeof(OpenTrack));
                     bytes_read = recvfrom(socketS, (char*)(&OpenTrack), sizeof(OpenTrack), 0, (sockaddr*)&from, &fromlen);
                     if (bytes_read > 0) {
-                            Yaw = DegToRad(OpenTrack.Yaw);
-                            Pitch = DegToRad(OpenTrack.Pitch);
-                            Roll = DegToRad(OpenTrack.Roll);
-                            pX = OpenTrack.X;
-                            pY = OpenTrack.Y;
-                            pZ = OpenTrack.Z;
-                            DriverLog( "driver_null: Data read: %f %f %f\n", Yaw, Pitch, Roll);
+                            //Yaw = DegToRad(OpenTrack.Yaw);
+                            //Pitch = DegToRad(OpenTrack.Pitch);
+                            //Roll = DegToRad(OpenTrack.Roll);
+                            qW = OpenTrack.W;
+                            qX = OpenTrack.X;
+                            qY = OpenTrack.Y;
+                            qZ = OpenTrack.Z;
+
+                            //toQuaternion(&OpenTrack);
+                            //DriverLog( "driver_null: Data read: %f %f %f\n", Yaw, Pitch, Roll);
                             //Convert yaw, pitch, roll to quaternion
-                            qW = cos(Yaw * 0.5) * cos(Roll * 0.5) * cos(Pitch * 0.5) + sin(Yaw * 0.5) * sin(Roll * 0.5) * sin(Pitch * 0.5);
-                            qX = cos(Yaw * 0.5) * sin(Roll * 0.5) * cos(Pitch * 0.5) - sin(Yaw * 0.5) * cos(Roll * 0.5) * sin(Pitch * 0.5);
-                            qY = cos(Yaw * 0.5) * cos(Roll * 0.5) * sin(Pitch * 0.5) + sin(Yaw * 0.5) * sin(Roll * 0.5) * cos(Pitch * 0.5);
-                            qZ = sin(Yaw * 0.5) * cos(Roll * 0.5) * cos(Pitch * 0.5) - cos(Yaw * 0.5) * sin(Roll * 0.5) * sin(Pitch * 0.5);
-                    }
-                    else {
+                            //qW = cos(Yaw * 0.5) * cos(Roll * 0.5) * cos(Pitch * 0.5) + sin(Yaw * 0.5) * sin(Roll * 0.5) * sin(Pitch * 0.5);
+                            //qX = cos(Yaw * 0.5) * sin(Roll * 0.5) * cos(Pitch * 0.5) - sin(Yaw * 0.5) * cos(Roll * 0.5) * sin(Pitch * 0.5);
+                            //qY = cos(Yaw * 0.5) * cos(Roll * 0.5) * sin(Pitch * 0.5) + sin(Yaw * 0.5) * sin(Roll * 0.5) * cos(Pitch * 0.5);
+                            //qZ = sin(Yaw * 0.5) * cos(Roll * 0.5) * cos(Pitch * 0.5) - cos(Yaw * 0.5) * sin(Roll * 0.5) * sin(Pitch * 0.5);
+                    } else {
                             bKeepReading = false;
-                            DriverLog( "driver_null: bKeepReading=false\n", Yaw, Pitch, Roll);
+                            DriverLog( "driver_sample: bKeepReading=false\n", Yaw, Pitch, Roll);
                     }
             }
     }

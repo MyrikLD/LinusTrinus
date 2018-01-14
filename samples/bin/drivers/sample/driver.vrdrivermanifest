@@ -4,8 +4,5 @@
 	"directory" : "",
 	"resourceOnly" : false,
 
-	"hmd_presence" :
-	[
-		"*.*"
-	]
+	"hmd_presence" : ["*.*"]
 }

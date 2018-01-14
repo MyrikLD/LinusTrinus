@@ -109,7 +109,16 @@ class Sender(Thread):
             "videostream": 'mjpeg',
             "sensorstream": 'normal',
             "sensorport": SENSOR_PORT,
-            "sensorVersion": 1
+            "sensorVersion": 1,
+
+            "motionboost": False,
+            "nolens": False,
+            "convertimage": False,
+            "fakeroll": False,
+            "source": "None",
+            "project": "Python",
+            "proc": "None",
+            "stroverlay": ""
         }).encode('utf-8')
 
         sock.send(settings)
