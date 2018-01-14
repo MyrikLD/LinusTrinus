@@ -1,6 +1,6 @@
 # LinusTrinus
 
-TrinusVR streaming server for Linux
+TrinusVR screen streaming server for Linux
 
 ## Modes
 |      Configuration      |   Status  |
@@ -16,6 +16,7 @@ TrinusVR streaming server for Linux
 * Python3 / Pypy3
 * evdev (optional)
 * ffmpeg
+* TrinusVR android client (tested on 2.1.3)
 
 ## Thanks
 
