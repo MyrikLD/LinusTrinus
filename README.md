@@ -16,3 +16,8 @@ TrinusVR streaming server for Linux
 * Python3 / Pypy3
 * evdev (optional)
 * ffmpeg
+
+## Thanks
+
+* [r57zone](https://github.com/r57zone/OpenVR-OpenTrack) - for good example
+* [TrinusVR team](https://www.trinusvirtualreality.com/) - for android client
