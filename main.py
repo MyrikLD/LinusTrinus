@@ -1,3 +1,4 @@
+#!/bin/python3
 import asyncore
 import base64
 import hashlib
