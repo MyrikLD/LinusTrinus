@@ -4,6 +4,12 @@ from DropQueue import DropQueue
 
 
 class FrameGenerator(Thread):
+    size = '1920x1080'
+    # size = '640x480'
+    framerate = 60
+    optirun = False
+    vsync = 2
+
     def __init__(self, settings: dict, buf: DropQueue):
         super(FrameGenerator, self).__init__()
         self.framebuf = buf
@@ -11,8 +17,10 @@ class FrameGenerator(Thread):
         self.end = False
 
     @staticmethod
-    def api(**kwargs) -> str:
-        cmd = 'optirun ffmpeg -f x11grab'
+    def api(optirun=False, **kwargs) -> str:
+        cmd = 'ffmpeg -f x11grab'
+        if optirun:
+            cmd = 'optirun ' + cmd
         for i in kwargs.items():
             cmd += ' -%s %s' % i
         cmd += ' -'
@@ -21,18 +29,17 @@ class FrameGenerator(Thread):
     def run(self):
         params = {
             'loglevel': 'error',
-            's': '1920x1080',
-            #'s': '640x480',
-            'framerate': 60,
+            's': self.size,
+            'framerate': self.framerate,
             'i': ':0.0',
             # 'qmin:v': 19,
             'f': 'mjpeg',
-            'vsync': 2,
+            'vsync': self.vsync,
             # 'vf': 'scale=1280x1024'
         }
-        ffmpeg_data = self.api(**params)
-        print(ffmpeg_data)
-        p = subprocess.Popen(ffmpeg_data.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        ffmpeg_cmd = self.api(self.optirun, **params)
+        print(ffmpeg_cmd)
+        p = subprocess.Popen(ffmpeg_cmd.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
         while not self.end:
             data = b''
