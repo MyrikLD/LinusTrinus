@@ -17,7 +17,7 @@ make -j4
 rm -rf ~/.steam/steam/steamapps/common/SteamVR/drivers/sample
 cp -r ./bin/drivers/sample $STEAMVR_PATH/drivers/sample
 mkdir $STEAMVR_PATH/drivers/sample/bin/${ARCH_TARGET}
-cp -r ./bin/${ARCH_TARGET} $STEAMVR_PATH/drivers/sample/bin
+cp -r ./bin/${ARCH_TARGET} $STEAMVR_PATH/drivers/sample/bin/${ARCH_TARGET}
 
 # Cleanup
 rm CMakeCache.txt cmake_install.cmake Makefile
