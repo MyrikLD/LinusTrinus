@@ -33,15 +33,6 @@ socklen_t  fromlen;
 std::thread *pSocketThread = NULL;
 int bytes_read;
 
-struct TOpenTrack {
-    double X;
-    double Y;
-    double Z;
-    double W;
-};
-TOpenTrack OpenTrack;
-double qW, qX, qY, qZ;
-
 
 using namespace vr;
 
@@ -55,6 +46,8 @@ using namespace vr;
 #else
 #error "Unsupported Platform."
 #endif
+
+HmdQuaternion_t OpenTrack;
 
 inline HmdQuaternion_t HmdQuaternion_Init( double w, double x, double y, double z )
 {
@@ -195,18 +188,14 @@ void WinSockReadFunc()
     DriverLog( "linus_trinus: Sock run\n");
     while (SocketActivated) {
         //Read UDP socket with OpenTrack data
+        memset(&OpenTrack, 0, sizeof(OpenTrack));
         bKeepReading = true;
         while (bKeepReading) {
-            memset(&OpenTrack, 0, sizeof(OpenTrack));
             bytes_read = recvfrom(socketS, (char*)(&OpenTrack), sizeof(OpenTrack), 0, (sockaddr*)&from, &fromlen);
             if (bytes_read > 0) {
                 //Yaw = DegToRad(OpenTrack.Yaw);
                 //Pitch = DegToRad(OpenTrack.Pitch);
                 //Roll = DegToRad(OpenTrack.Roll);
-                qW = OpenTrack.W;
-                qX = OpenTrack.X;
-                qY = OpenTrack.Y;
-                qZ = OpenTrack.Z;
 
                 //toQuaternion(&OpenTrack);
                 //DriverLog( "linus_trinus: Data read: %f %f %f\n", Yaw, Pitch, Roll);
@@ -457,10 +446,12 @@ public:
         pose.qDriverFromHeadRotation = HmdQuaternion_Init( 1, 0, 0, 0 );
 
         //Set head tracking rotation
-        pose.qRotation.w = qW;
-        pose.qRotation.x = qX;
-        pose.qRotation.y = qY;
-        pose.qRotation.z = qZ;
+//        pose.qRotation.w = qW;
+//        pose.qRotation.x = qX;
+//        pose.qRotation.y = qY;
+//        pose.qRotation.z = qZ;
+
+        pose.qRotation = OpenTrack;
 
         //Set position tracking
         // pose.vecPosition[0] = pX * 0.01;

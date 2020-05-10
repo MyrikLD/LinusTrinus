@@ -17,7 +17,8 @@ class OpenVR:
         q = data["quaternion"]
         d = 57.29578  # 1 radian in degrees
         log.debug('q: %s', q)
-        packet = struct.pack("4d", q[0] / -d, q[1] / -d, q[2] / d, q[3] / d)
+        # WXYZ
+        packet = struct.pack("4d", q[3] / d, q[0] / -d, q[1] / -d, q[2] / d)
         try:
             self.sock.sendto(packet, self.addr)
         except:
