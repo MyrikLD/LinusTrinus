@@ -1,5 +1,8 @@
 import socket
 import struct
+from logging import getLogger
+
+log = getLogger(__name__)
 
 
 class OpenVR:
@@ -9,13 +12,12 @@ class OpenVR:
         self.sock.connect(self.addr)
 
     def callback(self, data):
-        if not 'eulerData' in data:
+        if "quaternion" not in data:
             return
-        # prepare = data['eulerData'][2], data['eulerData'][0], data['eulerData'][1]
-        q = data['quaternion']
-        d = 57.29578
-        print(q)
-        packet = struct.pack('4d', q[0]/-d, q[1]/-d, q[2]/d, q[3]/d)
+        q = data["quaternion"]
+        d = 57.29578  # 1 radian in degrees
+        log.debug('q: %s', q)
+        packet = struct.pack("4d", q[0] / -d, q[1] / -d, q[2] / d, q[3] / d)
         try:
             self.sock.sendto(packet, self.addr)
         except:

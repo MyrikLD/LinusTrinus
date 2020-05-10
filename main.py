@@ -1,10 +1,13 @@
 #!/bin/python3
+
 import asyncore
 import base64
 import hashlib
 import json
+import logging
 import socket
 import struct
+from pprint import pformat
 from threading import Thread
 from time import sleep
 
@@ -13,10 +16,8 @@ from DropQueue import DropQueue
 from LinuxFrameGenerator import FrameGenerator
 from OpenVR_callback import OpenVR
 
-try:
-    from pprint import pprint
-except ImportError:
-    pprint = print
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 TCP_IP = discover()
 TCP_PORT = 7777
@@ -27,7 +28,7 @@ BUFFER_SIZE = 1024
 class SensorClient(Thread, asyncore.dispatcher):
     data = None
 
-    def __init__(self, callback_objects=list()):
+    def __init__(self, callback_objects=()):
         Thread.__init__(self)
         asyncore.dispatcher.__init__(self)
 
@@ -46,30 +47,32 @@ class SensorClient(Thread, asyncore.dispatcher):
         self.data = self.decode_pos(data)
 
         if self.data:
-            for i in self.callback:
-                i(self.data)
+            for callback in self.callback:
+                callback(self.data)
 
     @staticmethod
     def sensor_31(data):
         # empty = struct.unpack('b4b4b4b', data[:13])
-        dt = struct.unpack('3f', data[13:25])
-        speed = struct.unpack('6b', data[-6:])
-        return {'data': dt, 'speed': speed}
+        dt = struct.unpack("3f", data[13:25])
+        speed = struct.unpack("6b", data[-6:])
+        return {"data": dt, "speed": speed}
 
     @staticmethod
     def sensor_53(data):
-        crc, _, trigger = struct.unpack('3b', data[:3])
-        speed = struct.unpack('2b', data[3:5])
-        axisXY = struct.unpack('2f', data[5:13])
-        eulerData = struct.unpack('3f', data[13:25])
-        quaternion = struct.unpack('4f', data[25:41])
-        accel = struct.unpack('3f', data[41:])
-        return {'trigger': trigger,
-                'speed': speed,
-                'axisXY': axisXY,
-                'eulerData': eulerData,
-                'quaternion': quaternion,
-                'accel': accel}
+        crc, _, trigger = struct.unpack("3b", data[:3])
+        speed = struct.unpack("2b", data[3:5])
+        axis_xy = struct.unpack("2f", data[5:13])
+        euler_data = struct.unpack("3f", data[13:25])
+        quaternion = struct.unpack("4f", data[25:41])
+        accel = struct.unpack("3f", data[41:])
+        return {
+            "trigger": trigger,
+            "speed": speed,
+            "axisXY": axis_xy,
+            "eulerData": euler_data,
+            "quaternion": quaternion,
+            "accel": accel,
+        }
 
     def decode_pos(self, data):
         data_len = len(data)
@@ -78,13 +81,13 @@ class SensorClient(Thread, asyncore.dispatcher):
         elif not data_len % 31:
             return self.sensor_31(data[-31:])
         else:
-            print('WARNING: Unknown sensor data len: %i' % data_len)
+            log.warning("Unknown sensor data len: %i", data_len)
 
     @staticmethod
     def split_list(lst, group_len):
-        l = len(lst)
-        kol_in_group = l // group_len
-        return [lst[i:i + kol_in_group] for i in range(0, l, kol_in_group)]
+        data_len = len(lst)
+        kol_in_group = data_len // group_len
+        return [lst[i : i + kol_in_group] for i in range(0, data_len, kol_in_group)]
 
 
 class Sender(Thread):
@@ -102,25 +105,26 @@ class Sender(Thread):
 
         sett = self.get_settings(sock)
 
-        pprint(sett)
+        log.info(pformat(sett))
 
-        settings = json.dumps({
-            "version": 'std2',
-            "code": self.ch_summ(sett['ref'], '_defaulttglibva'),
-            "videostream": 'mjpeg',
-            "sensorstream": 'normal',
-            "sensorport": SENSOR_PORT,
-            "sensorVersion": 1,
-
-            "motionboost": False,
-            "nolens": False,
-            "convertimage": False,
-            "fakeroll": False,
-            "source": "None",
-            "project": "Python",
-            "proc": "None",
-            "stroverlay": ""
-        }).encode('utf-8')
+        settings = json.dumps(
+            {
+                "version": "std2",
+                "code": self.ch_summ(sett["ref"], "_defaulttglibva"),
+                "videostream": "mjpeg",
+                "sensorstream": "normal",
+                "sensorport": SENSOR_PORT,
+                "sensorVersion": 1,
+                "motionboost": False,
+                "nolens": False,
+                "convertimage": False,
+                "fakeroll": False,
+                "source": "None",
+                "project": "Python",
+                "proc": "None",
+                "stroverlay": "",
+            }
+        ).encode("utf-8")
 
         sock.send(settings)
 
@@ -132,35 +136,35 @@ class Sender(Thread):
 
     def send(self):
         scr = self.framebuf.get()
-        self.sock.send(struct.pack('>i', len(scr)))
+        self.sock.send(struct.pack(">i", len(scr)))
         self.sock.send(scr)
 
     def recv(self):
         try:
             t = self.sock.recv(1)
-            for i in range(t.count(b'e')):
+            for i in range(t.count(b"e")):
                 self.send()
         except ConnectionResetError:
-            print('Connection closed')
+            log.info("Connection closed")
             self.end = True
 
     @staticmethod
     def ch_summ(ref, module):
         c = ref + module
-        a = hashlib.sha1(c.encode('utf-8'))
+        a = hashlib.sha1(c.encode("utf-8"))
         s = a.digest()
-        c = base64.b64encode(s).decode('utf-8') + module
+        c = base64.b64encode(s).decode("utf-8") + module
         return c
 
     @staticmethod
-    def get_settings(sock):
+    def get_settings(sock: socket.socket):
         settings = json.loads(sock.recv(BUFFER_SIZE).decode("utf-8"))
-        settings['videoSupport'] = settings['videoSupport'].split(',')
-        settings['sensorSupport'] = settings['sensorSupport'].split(',')
+        settings["videoSupport"] = settings["videoSupport"].split(",")
+        settings["sensorSupport"] = settings["sensorSupport"].split(",")
         return settings
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sender = Sender()
 
     # Run frame generator for sender
