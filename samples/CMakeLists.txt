@@ -53,7 +53,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${ARCH_TARGET
 set(THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 set(SHARED_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shared)
 
-# Check that the steamVR SDK is installed 
+# Check that the steamVR SDK is installed
 # (needed to prevent a segfault in OpenVR).
 if(CMAKE_HOST_UNIX)
   find_file(OPENVRPATHS openvrpaths.vrpath PATHS $ENV{HOME}/.config/openvr "$ENV{HOME}/Library/Application Support/OpenVR/.openvr")
@@ -106,7 +106,7 @@ find_package(OpenGL REQUIRED)
 
 ## GLEW 1.11
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  # On GNU/Linux, glew can be found on the package manager. 
+  # On GNU/Linux, glew can be found on the package manager.
   find_package(GLEW 1.11 REQUIRED)
 else()
   # Otherwise, use the shipped binaries.
@@ -209,6 +209,7 @@ find_library(OPENVR_LIBRARIES
     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib
     ${CMAKE_CURRENT_SOURCE_DIR}/api
+    /usr/lib/
   PATH_SUFFIXES
     osx32
     linux64
@@ -216,7 +217,7 @@ find_library(OPENVR_LIBRARIES
   NO_DEFAULT_PATH
   NO_CMAKE_FIND_ROOT_PATH
 )
-set(OPENVR_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../headers)
+set(OPENVR_INCLUDE_DIR /usr/include/openvr/)
 
 
 # -----------------------------------------------------------------------------
