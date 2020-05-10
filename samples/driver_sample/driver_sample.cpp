@@ -134,7 +134,7 @@ void WatchdogThreadFunction(  )
 #else
                 // for the other platforms, just send one every five seconds
                 std::this_thread::sleep_for( std::chrono::seconds( 5 ) );
-                vr::VRWatchdogHost()->WatchdogWakeUp();
+                vr::VRWatchdogHost()->WatchdogWakeUp(TrackedDeviceClass_HMD);
 #endif
         }
 }

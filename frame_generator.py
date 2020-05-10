@@ -2,7 +2,7 @@ import subprocess
 from logging import getLogger
 from threading import Thread
 
-from DropQueue import DropQueue
+from drop_queue import DropQueue
 
 log = getLogger(__name__)
 
