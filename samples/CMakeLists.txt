@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(openvr_samples)
+project(linus_trinus)
 
 # -----------------------------------------------------------------------------
 ## SYSTEM PROPERTIES ##
@@ -244,6 +244,6 @@ endif()
 # -----------------------------------------------------------------------------
 ## SUBDIRECTORIES ##
 
-add_subdirectory(driver_sample)
+add_subdirectory(driver_linus_trinus)
 
 # -----------------------------------------------------------------------------
