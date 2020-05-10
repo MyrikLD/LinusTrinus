@@ -126,3 +126,6 @@ dmypy.json
 
 # VSCode configuration
 .vscode
+
+.cmake
+build-samples-*-*/

@@ -1,8 +1,8 @@
 {
-   "driver_sample" : {
+   "linus_trinus" : {
       "enable" : true,
       "serialNumber" : "1234",
-      "modelNumber" : "SampleModel 1",
+      "modelNumber" : "linus_trinus",
       "windowX" : 0,
       "windowY" : 0,
       "windowWidth" : 640,
