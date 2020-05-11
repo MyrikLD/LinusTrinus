@@ -14,6 +14,8 @@ class FrameGenerator(Thread):
     optirun = False
     vsync = 2
 
+    buffer_size = 1024 * 10
+
     def __init__(self, settings: dict, buf: DropQueue):
         super(FrameGenerator, self).__init__()
         self.framebuf = buf
@@ -51,21 +53,22 @@ class FrameGenerator(Thread):
             stdin=subprocess.PIPE,
         )
 
+        data = bytearray()
+        start = -1
         while not self.end:
-            data = b""
+            data += p.stdout.read(self.buffer_size)
 
-            for i in p.stdout:
-                data += i
+            if start == -1:
                 start = data.find(b"\xFF\xD8\xFF")
-                if start != -1:
-                    end = data.find(b"\xFF\xD9")
-                else:
-                    # No end without start
-                    continue
-                if end != -1 and start != -1:
-                    frame = data[start : end + 1]
-                    self.framebuf.put(frame)
+                continue
+            else:
+                end = data.find(b"\xFF\xD9")
 
-                    data = data[end + 2 :]
+            if end != -1 and start != -1:
+                frame = data[start : end + 1]
+                self.framebuf.put(frame)
+
+                data = data[end + 2 :]
+                start = -1
 
         log.info("FrameGenerator end")
