@@ -30,8 +30,9 @@ def main():
     # Wait for sensor server init
     sleep(1)
 
-    openvr = OpenVR()
-    client = SensorClient(server_ip, server_port=server_port, callback_objects=[openvr])
+    client = SensorClient(
+        server_ip, server_port=server_port, callback_objects=[OpenVR()]
+    )
     client.start()
 
     client.join()

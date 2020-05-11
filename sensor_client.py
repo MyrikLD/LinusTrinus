@@ -31,7 +31,10 @@ class SensorClient(Thread, asyncore.dispatcher):
 
         if self.data:
             for callback in self.callback:
-                callback(self.data)
+                try:
+                    callback(self.data)
+                except Exception as e:
+                    log.exception(e)
 
     @staticmethod
     def sensor_31(data):
@@ -70,4 +73,4 @@ class SensorClient(Thread, asyncore.dispatcher):
     def split_list(lst, group_len):
         data_len = len(lst)
         kol_in_group = data_len // group_len
-        return [lst[i: i + kol_in_group] for i in range(0, data_len, kol_in_group)]
+        return [lst[i : i + kol_in_group] for i in range(0, data_len, kol_in_group)]
