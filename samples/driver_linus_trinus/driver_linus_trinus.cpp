@@ -251,6 +251,7 @@ public:
         DriverLog( "linus_trinus: Display Frequency: %f\n", m_flDisplayFrequency );
         DriverLog( "linus_trinus: IPD: %f\n", m_flIPD );
         DriverLog( "linus_trinus: RUN\n" );
+
         struct sockaddr_in local;
         memset((char *) &local, 0, sizeof(local));
         local.sin_family = AF_INET;

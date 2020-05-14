@@ -52,6 +52,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${ARCH_TARGET
 
 set(THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 set(SHARED_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shared)
+set(LIB_DIR /usr/lib/)
 
 # Check that the steamVR SDK is installed
 # (needed to prevent a segfault in OpenVR).
@@ -116,6 +117,7 @@ else()
       glew32
     PATHS
       ${THIRDPARTY_DIR}/glew/glew-1.11.0/lib/Release
+      ${LIB_DIR}
     PATH_SUFFIXES
       osx32
       ${WINDOWS_PATH_SUFFIXES}
@@ -132,6 +134,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         ${lib}
       PATHS
         ${THIRDPARTY_DIR}/sdl2-2.0.3/bin
+        ${LIB_DIR}
       PATH_SUFFIXES
         osx32
     )
@@ -144,6 +147,7 @@ else()
         ${lib}
       PATHS
         ${THIRDPARTY_DIR}/sdl2-2.0.3/bin
+        ${LIB_DIR}
       PATH_SUFFIXES
         linux${PLATFORM}
         ${WINDOWS_PATH_SUFFIXES}
@@ -151,7 +155,7 @@ else()
     list(APPEND SDL2_LIBRARIES ${${lib}_LIBRARY})
   endforeach()
 endif()
-set(SDL2_INCLUDE_DIR ${THIRDPARTY_DIR}/sdl2-2.0.3/include)
+set(SDL2_INCLUDE_DIR /usr/include/SDL2/)
 
 ## Vulkan
 if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
@@ -161,14 +165,14 @@ if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
         vulkan
       PATHS
         ${THIRDPARTY_DIR}/vulkan-1.0.49.0/lib
+        ${LIB_DIR}
       PATH_SUFFIXES
         linux${PLATFORM}
         ${WINDOWS_PATH_SUFFIXES}
       NO_DEFAULT_PATH
   )
-  set(VULKAN_INCLUDE_DIR ${THIRDPARTY_DIR}/vulkan-1.0.49.0/include)
+  set(VULKAN_INCLUDE_DIR /usr/include/vulkan/)
 endif()
-
 
 ## Qt 5
 ## Important :
@@ -209,7 +213,7 @@ find_library(OPENVR_LIBRARIES
     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib
     ${CMAKE_CURRENT_SOURCE_DIR}/api
-    /usr/lib/
+    ${LIB_DIR}
   PATH_SUFFIXES
     osx32
     linux64
