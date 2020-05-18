@@ -12,7 +12,7 @@ class FrameGenerator(Thread):
     height = 600
 
     # size = '640x480'
-    framerate = 60
+    framerate = 30
     optirun = False
     vsync = 2
 
