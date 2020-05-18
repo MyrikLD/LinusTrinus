@@ -8,7 +8,9 @@ log = getLogger(__name__)
 
 
 class FrameGenerator(Thread):
-    size = "1920x1080"
+    width = 800 * 2
+    height = 600
+
     # size = '640x480'
     framerate = 60
     optirun = False
@@ -21,6 +23,10 @@ class FrameGenerator(Thread):
         self.framebuf = buf
         self.settings = settings
         self.end = False
+
+    @property
+    def size(self):
+        return f"{self.width}x{self.height}"
 
     @staticmethod
     def api(optirun=False, **kwargs) -> str:
@@ -37,11 +43,10 @@ class FrameGenerator(Thread):
             "loglevel": "error",
             "s": self.size,
             "framerate": self.framerate,
-            "i": ":0.0",
+            "i": ":0.0+0,0",
             # 'qmin:v': 19,
             "f": "mjpeg",
             "vsync": self.vsync,
-            # 'vf': 'scale=1280x1024'
         }
         ffmpeg_cmd = self.api(self.optirun, **params)
         log.info("ffmpeg cmd: %s", ffmpeg_cmd)

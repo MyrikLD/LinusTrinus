@@ -5,10 +5,10 @@
       "modelNumber" : "linus_trinus",
       "windowX" : 0,
       "windowY" : 0,
-      "windowWidth" : 640,
-      "windowHeight" : 480,
-      "renderWidth" : 400,
-      "renderHeight" : 300,
+      "windowWidth" : 1600,
+      "windowHeight" : 600,
+      "renderWidth" : 800,
+      "renderHeight" : 600,
       "secondsFromVsyncToPhotons" : 0.011,
       "displayFrequency" : 0
    }
