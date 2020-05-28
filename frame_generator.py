@@ -26,7 +26,7 @@ class FrameGenerator(Thread):
 
     @property
     def size(self):
-        return f"{self.width}x{self.height}"
+        return "%sx%s"%(self.width, self.height)
 
     @staticmethod
     def api(optirun=False, **kwargs) -> str:
