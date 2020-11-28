@@ -1,4 +1,5 @@
 import subprocess
+import os
 from logging import getLogger
 from threading import Thread
 
@@ -43,7 +44,7 @@ class FrameGenerator(Thread):
             "loglevel": "error",
             "s": self.size,
             "framerate": self.framerate,
-            "i": ":0.0+0,0",
+            "i": "{}+64,24".format(os.getenv("DISPLAY")),
             # 'qmin:v': 19,
             "f": "mjpeg",
             "vsync": self.vsync,
