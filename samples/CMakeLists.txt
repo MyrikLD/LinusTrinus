@@ -5,6 +5,8 @@ project(linus_trinus)
 # -----------------------------------------------------------------------------
 ## SYSTEM PROPERTIES ##
 
+set(LIB_DIR /usr/lib/)
+
 # If not set, determines the running platform architecture.
 if(NOT PLATFORM)
   if(CMAKE_SIZEOF_VOID_P MATCHES 8)
@@ -20,6 +22,7 @@ set(SDL_REQUIRED_LIBRARIES SDL2)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   add_definitions(-DLINUX -DPOSIX)
   set(ARCH_TARGET linux64)
+  set(LIB_DIR /usr/lib/x86_64-linux-gnu/)
 
   if(${PLATFORM} MATCHES 32)
     message(WARNING "OpenVR x86 binaries not provided on GNU/Linux.")
@@ -52,7 +55,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${ARCH_TARGET
 
 set(THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 set(SHARED_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shared)
-set(LIB_DIR /usr/lib/)
 
 # Check that the steamVR SDK is installed
 # (needed to prevent a segfault in OpenVR).
