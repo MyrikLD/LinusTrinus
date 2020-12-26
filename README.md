@@ -2,20 +2,22 @@
 
 TrinusVR screen streaming server for Linux
 
-## Modes
-|      Configuration      |   Status  |
-| ----------------------- |:---------:|
-| Mouse                   |   OK      |
-| SteamVR / OpenVR        |   OK      |
-| Raw output              |   OK      |
-| ???                     |   !!!     |
-
+## Available modes
+#### Devices
+- Mouse
+- Steamvr
+#### Screen capture
+- ffmped
+- xwd
 
 ## Dependencies
 
 * Python3 / Pypy3
 * evdev (optional)
 * ffmpeg
+* wand
+* xwd
+* xwininfo
 * TrinusVR android client (tested on 2.2.1)
 
 ## Running

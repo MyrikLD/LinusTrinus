@@ -100,7 +100,7 @@ else()
 endif()
 
 # -----------------------------------------------------------------------------
-## LIBRARIES ##
+## LIBRARIES ##
 
 ## OpenGL / GLU
 find_package(OpenGL REQUIRED)

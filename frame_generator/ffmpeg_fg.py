@@ -7,11 +7,13 @@ from drop_queue import DropQueue
 log = getLogger(__name__)
 
 
-class FrameGenerator(Thread):
+class FfmpegFrameGenerator(Thread):
+    end = False
+    framebuf: DropQueue
+
     width = 800 * 2
     height = 600
 
-    # size = '640x480'
     framerate = 30
     optirun = False
     vsync = 2
@@ -19,14 +21,13 @@ class FrameGenerator(Thread):
     buffer_size = 1024 * 10
 
     def __init__(self, settings: dict, buf: DropQueue):
-        super(FrameGenerator, self).__init__()
+        super().__init__()
         self.framebuf = buf
         self.settings = settings
-        self.end = False
 
     @property
     def size(self):
-        return "%sx%s"%(self.width, self.height)
+        return f"{self.width}x{self.height}"
 
     @staticmethod
     def api(optirun=False, **kwargs) -> str:
@@ -39,12 +40,13 @@ class FrameGenerator(Thread):
         return cmd
 
     def run(self):
+        self.end = False
+
         params = {
             "loglevel": "error",
             "s": self.size,
             "framerate": self.framerate,
             "i": ":0.0+0,0",
-            # 'qmin:v': 19,
             "f": "mjpeg",
             "vsync": self.vsync,
         }

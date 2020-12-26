@@ -5,7 +5,7 @@ from time import sleep
 
 from callback.open_vr import OpenVR
 from discover import discover
-from frame_generator import FrameGenerator
+from frame_generator.xwd_fg import XwdFrameGenerator
 from sender import Sender
 from sensor_client import SensorClient
 
@@ -21,7 +21,7 @@ def main():
     sender = Sender(server_ip, server_port=server_port, client_port=client_port)
 
     # Run frame generator for sender
-    framegen = FrameGenerator(sender.settings, sender.framebuf)
+    framegen = XwdFrameGenerator(sender.settings, sender.framebuf)
     framegen.start()
 
     # Start sending frames to client
