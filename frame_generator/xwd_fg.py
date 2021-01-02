@@ -14,10 +14,9 @@ class XwdFrameGenerator(Thread):
     end = False
     framebuf: DropQueue
 
-    def __init__(self, settings: dict, buf: DropQueue):
+    def __init__(self, buf: DropQueue):
         super().__init__()
         self.framebuf = buf
-        self.settings = settings
 
     @staticmethod
     def find_window_id(name: str) -> int:
@@ -48,6 +47,7 @@ class XwdFrameGenerator(Thread):
     def run(self):
         self.end = False
         window_id = None
+        log.info("Waiting for compositor window")
         while not window_id:
             window_id = self.find_window_id("SteamVR Compositor")
         log.info("Found compositor window id: %s", hex(window_id))

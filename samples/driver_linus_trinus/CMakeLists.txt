@@ -6,7 +6,7 @@ add_library(
         driverlog.h
         driver_linus_trinus.cpp
         watchdog.cpp watchdog.h k_pch.h driver_linus_trinus.h socket_process.h socket_process.cpp
-)
+        OvrController.cpp OvrController.h ../shared/openvr_math.h Utils.h)
 
 add_definitions(-DDRIVER_SAMPLE_EXPORTS)
 

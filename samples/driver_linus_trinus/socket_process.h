@@ -13,6 +13,8 @@
 
 #include "driverlog.h"
 #include <openvr_driver.h>
+#include <shared/alvr_packet_types.h>
+#include "Utils.h"
 
 #ifndef _WIN32
 #define SOCKET int
@@ -20,17 +22,23 @@
 
 using namespace vr;
 
-inline HmdQuaternion_t HmdQuaternion_Init(double w, double x, double y, double z) {
-    HmdQuaternion_t quat;
-    quat.w = w;
-    quat.x = x;
-    quat.y = y;
-    quat.z = z;
-    return quat;
-}
+//inline HmdQuaternion_t HmdQuaternion_Init(double w, double x, double y, double z) {
+//    HmdQuaternion_t quat;
+//    quat.w = w;
+//    quat.x = x;
+//    quat.y = y;
+//    quat.z = z;
+//    return quat;
+//}
+
+//struct Position {
+//    HmdQuaternion_t rotation{0, 0, 0, 0};
+//    HmdVector3d_t position{0, 0, 0};
+//};
 
 struct ThreadState {
-    HmdQuaternion_t OpenTrack{0, 0, 0, 0};
+    TrackingInfo tracking_info;
+
     SOCKET socketS = 0;
     std::thread *thread = nullptr;
     bool SocketActivated = false;

@@ -45,13 +45,13 @@ void SockReadFunc(ThreadState *state) {
     struct sockaddr_in from;
 
     while (state->SocketActivated) {
-        memset(&state->OpenTrack, 0, sizeof(state->OpenTrack));
+        memset(&state->tracking_info, 0, sizeof(state->tracking_info));
         state->bKeepReading = true;
         while (state->bKeepReading) {
             bytes_read = recvfrom(
                     state->socketS,
-                    (char *) (&state->OpenTrack),
-                    sizeof(state->OpenTrack),
+                    (char *) (&state->tracking_info),
+                    sizeof(state->tracking_info),
                     0,
                     (sockaddr *) &from,
                     &fromlen

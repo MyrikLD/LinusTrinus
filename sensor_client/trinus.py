@@ -4,6 +4,8 @@ import socket
 import struct
 from threading import Thread
 
+from drop_queue import DropQueue
+
 log = logging.getLogger(__name__)
 
 
@@ -19,6 +21,8 @@ class SensorClient(Thread, asyncore.dispatcher):
         self.connect((server, server_port))
 
         self.callback = [i.callback for i in callback_objects]
+
+        self.msg_buf = DropQueue(2)
 
     def run(self):
         asyncore.loop()

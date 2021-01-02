@@ -16,6 +16,7 @@
 
 #endif
 
+#include "OvrController.h"
 
 using namespace vr;
 
@@ -70,6 +71,21 @@ public:
         DriverLog("linus_trinus: Display Frequency: %f\n", m_flDisplayFrequency);
         DriverLog("linus_trinus: IPD: %f\n", m_flIPD);
         DriverLog("linus_trinus: RUN\n");
+
+        bool ret;
+        m_leftController = new OvrController(true, 0);
+        ret = VRServerDriverHost()->TrackedDeviceAdded(
+                m_leftController->GetSerialNumber().c_str(),
+                vr::TrackedDeviceClass_Controller,
+                m_leftController
+        );
+
+        m_rightController = new OvrController(false, 1);
+        ret = VRServerDriverHost()->TrackedDeviceAdded(
+                m_rightController->GetSerialNumber().c_str(),
+                vr::TrackedDeviceClass_Controller,
+                m_rightController
+        );
 
         create_socket_thread(threadState, 4242);
     }
@@ -133,6 +149,9 @@ public:
     void *GetComponent(const char *pchComponentNameAndVersion) override {
         if (!strcmp(pchComponentNameAndVersion, vr::IVRDisplayComponent_Version)) {
             return (vr::IVRDisplayComponent *) this;
+        }
+        if (!strcmp(pchComponentNameAndVersion, vr::IVRCameraComponent_Version)) {
+            return (vr::IVRCameraComponent *) this;
         }
 
         return nullptr;
@@ -198,6 +217,10 @@ public:
     DriverPose_t GetPose() override {
         DriverPose_t pose = {0};
 
+        pose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
+        pose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
+        pose.qRotation = HmdQuaternion_Init(1, 0, 0, 0);
+
         if (threadState->SocketActivated) {
             pose.poseIsValid = true;
             pose.result = TrackingResult_Running_OK;
@@ -206,12 +229,36 @@ public:
             pose.poseIsValid = false;
             pose.result = TrackingResult_Uninitialized;
             pose.deviceIsConnected = false;
+            return pose;
         }
 
-        pose.qWorldFromDriverRotation = HmdQuaternion_Init(1, 0, 0, 0);
-        pose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
+        if (threadState->SocketActivated) {
 
-        pose.qRotation = threadState->OpenTrack;
+            TrackingInfo info = threadState->tracking_info;
+
+            pose.qRotation = HmdQuaternion_Init(info.HeadPose_Pose_Orientation.w,
+                                                info.HeadPose_Pose_Orientation.x,
+                                                info.HeadPose_Pose_Orientation.y,
+                                                info.HeadPose_Pose_Orientation.z);
+
+
+            pose.vecPosition[0] = info.HeadPose_Pose_Position.x;
+            pose.vecPosition[1] = info.HeadPose_Pose_Position.y;
+            pose.vecPosition[2] = info.HeadPose_Pose_Position.z;
+
+            // set battery percentage
+            vr::VRProperties()->SetFloatProperty(m_ulPropertyContainer, vr::Prop_DeviceBatteryPercentage_Float,
+                                                 info.battery / 100.0f);
+
+            // To disable time warp (or pose prediction), we dont set (set to zero) velocity and acceleration.
+
+            pose.poseTimeOffset = 0;
+
+            m_leftController->onPoseUpdate(0, info);
+            m_rightController->onPoseUpdate(1, info);
+        }
+
+
 
         return pose;
     }
@@ -226,6 +273,9 @@ public:
     std::string GetSerialNumber() const { return m_sSerialNumber; }
 
 private:
+    OvrController* m_leftController;
+    OvrController* m_rightController;
+    
     vr::TrackedDeviceIndex_t m_unObjectId;
     vr::PropertyContainerHandle_t m_ulPropertyContainer;
 
