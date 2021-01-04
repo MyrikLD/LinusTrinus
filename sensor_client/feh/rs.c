@@ -564,7 +564,6 @@ static int reed_solomon_decode(reed_solomon* rs, unsigned char **data_blocks, in
 int reed_solomon_encode(reed_solomon* rs, unsigned char** shards, int nr_shards, int block_size) {
     unsigned char** data_blocks;
     unsigned char** fec_blocks;
-    printf("i %i", rs->data_shards);
     int i, ds = rs->data_shards, ps = rs->parity_shards, ss = rs->shards;
     i = nr_shards / ss;
     data_blocks = shards;
@@ -633,16 +632,68 @@ int reed_solomon_reconstruct(reed_solomon* rs, unsigned char** shards, unsigned 
     return err;
 }
 
-unsigned char** run(int data_shards, int total_parity_shards, unsigned char** data, int nr_shards, int block_size){
-    reed_solomon* rs = reed_solomon_new(data_shards, total_parity_shards);
+static const int ALVR_FEC_SHARDS_MAX = 20;
+static const int ALVR_MAX_PACKET_SIZE = 1400;
+static const int ALVR_MAX_VIDEO_BUFFER_SIZE = ALVR_MAX_PACKET_SIZE - 100;//sizeof(VideoFrame);
 
-    printf("reed_solomon created\n");
+inline int CalculateParityShards(int dataShards, int fecPercentage) {
+	int totalParityShards = (dataShards * fecPercentage + 99) / 100;
+	return totalParityShards;
+}
 
-    reed_solomon_encode(rs, data, nr_shards, block_size);
+// Calculate how many packet is needed for make signal shard.
+inline int CalculateFECShardPackets(int len, int fecPercentage) {
+	// This reed solomon implementation accept only 255 shards.
+	// Normally, we use ALVR_MAX_VIDEO_BUFFER_SIZE as block_size and single packet becomes single shard.
+	// If we need more than maxDataShards packets, we need to combine multiple packet to make single shrad.
+	// NOTE: Moonlight seems to use only 255 shards for video frame.
+	int maxDataShards = ((ALVR_FEC_SHARDS_MAX - 2) * 100 + 99 + fecPercentage) / (100 + fecPercentage);
+	int minBlockSize = (len + maxDataShards - 1) / maxDataShards;
+	int shardPackets = (minBlockSize + ALVR_MAX_VIDEO_BUFFER_SIZE - 1) / ALVR_MAX_VIDEO_BUFFER_SIZE;
 
-    printf("reed_solomon encoded\n");
+	return shardPackets;
+}
 
-    reed_solomon_release(rs);
+run_result* run(unsigned char *buf, unsigned int len, unsigned int m_fecPercentage){
+    int shardPackets = CalculateFECShardPackets(len, m_fecPercentage);
 
-    return data;
+	int blockSize = shardPackets * ALVR_MAX_VIDEO_BUFFER_SIZE;
+
+	int dataShards = (len + blockSize - 1) / blockSize;
+	int totalParityShards = CalculateParityShards(dataShards, m_fecPercentage);
+	int totalShards = dataShards + totalParityShards;
+
+	reed_solomon *rs = reed_solomon_new(dataShards, totalParityShards);
+
+	uint8_t **shards = malloc(totalShards * sizeof(uint8_t*));
+
+//	std::vector<uint8_t *> shards(totalShards);
+
+	for (int i = 0; i < dataShards; i++) {
+		shards[i] = buf + i * blockSize;
+	}
+	if (len % blockSize != 0) {
+		// Padding
+		shards[dataShards - 1] = malloc(blockSize * sizeof(uint8_t*));
+		memset(shards[dataShards - 1], 0, blockSize);
+		memcpy(shards[dataShards - 1], buf + (dataShards - 1) * blockSize, len % blockSize);
+	}
+	for (int i = 0; i < totalParityShards; i++) {
+		shards[dataShards + i] = malloc(blockSize * sizeof(uint8_t*));
+	}
+
+	int ret = reed_solomon_encode(rs, &shards[0], totalShards, blockSize);
+	assert(ret == 0);
+
+	reed_solomon_release(rs);
+
+    run_result *res = malloc(sizeof(run_result));
+    res->totalShards = totalShards;
+    res->blockSize = blockSize;
+    res->shards = shards;
+    res->shardPackets = shardPackets;
+    res->dataShards = dataShards;
+    res->totalParityShards = totalParityShards;
+
+    return res;
 };

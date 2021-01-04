@@ -1,3 +1,5 @@
+import fcntl
+import os
 import re
 import subprocess
 from logging import getLogger
@@ -8,6 +10,13 @@ from wand.image import Image
 from drop_queue import DropQueue
 
 log = getLogger(__name__)
+
+
+def output(p):
+    l = True
+    while l:
+        l = p.readline()
+        print(l)
 
 
 class XwdFrameGenerator(Thread):
@@ -45,6 +54,20 @@ class XwdFrameGenerator(Thread):
             return data[0]
 
     def run(self):
+        p = subprocess.Popen(
+            "ffmpeg -i pipe: -an -f mjpeg -c:v libx265 -flush_packets 1 -vf scale=2880:1600 -",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+        )
+
+        fcntl.fcntl(
+            p.stdout.fileno(),
+            fcntl.F_SETFL,
+            fcntl.fcntl(p.stdout.fileno(), fcntl.F_GETFL) | os.O_NONBLOCK,
+        )
+
         self.end = False
         window_id = None
         log.info("Waiting for compositor window")
@@ -58,7 +81,18 @@ class XwdFrameGenerator(Thread):
             if not data:
                 continue
 
-            with Image(blob=data, format="xwd") as im:
-                self.framebuf.put(im.make_blob("jpeg"))
+            try:
+                with Image(blob=data, format="xwd") as im:
+                    # im.resize(2880, 1600)
+                    # output(p.stderr)
+                    p.stdin.write(im.make_blob("jpg"))
+
+                    d = p.stdout.read()
+                    if d:
+                        # with open("o.mp4", "ab") as f:
+                        #     f.write(d)
+                        self.framebuf.put(d)
+            except:
+                print("error")
 
         log.info("FrameGenerator end")

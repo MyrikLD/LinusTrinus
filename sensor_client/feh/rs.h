@@ -16,6 +16,15 @@ extern "C" {
 		unsigned char* parity;
 	} reed_solomon;
 
+	typedef struct _run_result {
+        unsigned int totalShards;
+        unsigned int blockSize;
+        unsigned int shardPackets;
+        unsigned int dataShards;
+        unsigned int totalParityShards;
+        unsigned char** shards;
+    } run_result;
+
 	/**
 	 * MUST initial one time
 	 * */
@@ -42,6 +51,7 @@ extern "C" {
 	 * marks[nr_shards] marks as errors
 	 * */
 	int reed_solomon_reconstruct(reed_solomon* rs, unsigned char** shards, unsigned char* marks, int nr_shards, int block_size);
+	run_result* run(unsigned char *buf, unsigned int len, unsigned int m_fecPercentage);
 
 #ifdef __cplusplus
 };

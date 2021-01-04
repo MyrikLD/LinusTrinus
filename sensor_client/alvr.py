@@ -1,21 +1,18 @@
-import asyncore
 import logging
+import os
 import socket
-from ctypes import cdll
+from datetime import datetime
 from threading import Thread
 from typing import Tuple
 
+import pyximport
+
 from alvr_utils.client_config_packet import ClientConfigPacket
-from alvr_utils.packet import parse_packet
+from alvr_utils.packet import VideoFrame, parse_packet
 from drop_queue import DropQueue
 
-# from sensor_client.feh.packet import FECSend
-# from sensor_client.feh.rs import py_reed_solomon_init
-from sensor_client.feh.packet_lib import FECSend
-
-# lib = cdll.LoadLibrary("sensor_client/feh/rs.so")
-# lib.reed_solomon_init()
-# py_reed_solomon_init()
+pyximport.install(setup_args={'include_dirs': os.path.abspath(".")})
+from sensor_client.feh.rs import FECSend
 
 
 class Ip:
@@ -39,7 +36,7 @@ class Ip:
 
 
 log = logging.getLogger(__name__)
-config1 = {
+config = {
     "setupWizard": False,
     "openvrConfig": {
         "universe_id": 2,
@@ -138,7 +135,7 @@ config1 = {
                     "sharpening": 0.0,
                 },
             },
-            "codec": {"variant": "H264"},
+            "codec": {"variant": "HEVC"},
             "clientRequestRealtimeDecoder": True,
             "encodeBitrateMbs": 15,
         },
@@ -219,7 +216,8 @@ class SensorClient(Thread):
 
     def __init__(self, client: Tuple[str, int], server_port=9944, callback_objects=()):
         Thread.__init__(self)
-        asyncore.dispatcher.__init__(self)
+        self.packetCounter = 0
+        self.videoPacketCounter = 0
 
         connection = {
             "autoTrustClients": False,
@@ -229,7 +227,7 @@ class SensorClient(Thread):
             "clientRecvBufferSize": 60000,
             "aggressiveKeyframeResend": False,
         }
-        config1["sessionSettings"]["connection"] = connection
+        config["sessionSettings"]["connection"] = connection
 
         # self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.bind(("", connection["listenPort"]))
@@ -240,13 +238,13 @@ class SensorClient(Thread):
 
     def run(self):
         self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.udp.bind(("", config1["sessionSettings"]["connection"]["listenPort"]))
+        self.udp.bind(("", config["sessionSettings"]["connection"]["listenPort"]))
 
         self.tcp = self.ask_connection(self.client)
 
         while 1:
             self.handle_read()
-            self.handle_write()
+            # self.handle_write()
 
     def ask_connection(self, client):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -255,9 +253,9 @@ class SensorClient(Thread):
         init_data = sock.recv(self.buffer_size)
         my_ip = Ip.load(init_data[-4:])
 
-        port = config1["sessionSettings"]["connection"]["webServerPort"]
+        port = config["sessionSettings"]["connection"]["webServerPort"]
         config_packet = ClientConfigPacket(
-            session_desc=config1,
+            session_desc=config,
             eye_resolution_width=1344,
             eye_resolution_height=1440,
             fps=60,
@@ -266,15 +264,59 @@ class SensorClient(Thread):
         sock.send(config_packet.pack())
         return sock
 
+    @staticmethod
+    def timestamp():
+        return int(datetime.now().timestamp() * 1000000)
+
     def handle_read(self):
-        data = self.udp.recv(self.buffer_size)
+        data, address = self.udp.recvfrom(self.buffer_size)
         if data:
             self.on_data(data)
 
-    def handle_write(self):
-        if not self.msg_buf.empty():
-            image = self.msg_buf.get()
-            result = FECSend(image)
+            if not self.msg_buf.empty():
+                image = self.msg_buf.get()
+                fecPercentage = 5
+                result = FECSend(image, len(image), fecPercentage)
+
+                vf = VideoFrame(
+                    packetCounter=self.packetCounter,
+                    trackingFrameIndex=1,
+                    videoFrameIndex=1,
+                    sentTime=self.timestamp(),
+                    frameByteSize=len(image),
+                    fecIndex=0,
+                    fecPercentage=fecPercentage,
+                )
+
+                ALVR_MAX_PACKET_SIZE = 1400
+                ALVR_MAX_VIDEO_BUFFER_SIZE = ALVR_MAX_PACKET_SIZE - len(vf.pack())
+                dataRemain = len(image)
+                for i in range(result.dataShards):
+                    for j in range(result.shardPackets):
+                        copyLength = min(ALVR_MAX_VIDEO_BUFFER_SIZE, dataRemain)
+                        if copyLength <= 0:
+                            break
+                        p = j * ALVR_MAX_VIDEO_BUFFER_SIZE
+                        payload = result.shards[i][p: p + copyLength]
+                        dataRemain -= ALVR_MAX_VIDEO_BUFFER_SIZE
+                        vf.packetCounter = self.videoPacketCounter
+                        self.videoPacketCounter += 1
+                        vf.sentTime = self.timestamp()
+                        self.udp.sendto(vf.pack() + payload, address)
+                        vf.fecIndex += 1
+
+                vf.fecIndex = result.dataShards * result.shardPackets
+
+                for i in range(result.totalParityShards):
+                    for j in range(result.shardPackets):
+                        copyLength = ALVR_MAX_VIDEO_BUFFER_SIZE
+                        p = j * ALVR_MAX_VIDEO_BUFFER_SIZE
+                        payload = result.shards[result.dataShards + i][p:copyLength]
+                        vf.packetCounter = self.videoPacketCounter
+                        self.videoPacketCounter += 1
+                        vf.sentTime = self.timestamp()
+                        self.udp.sendto(vf.pack() + payload, address)
+                        vf.fecIndex += 1
 
     def decode_pos(self, data):
         d = parse_packet(data)
@@ -283,7 +325,6 @@ class SensorClient(Thread):
     def on_data(self, data):
         if not data:
             return
-        # log.info(data)
         self.data = self.decode_pos(data)
 
         if self.data:

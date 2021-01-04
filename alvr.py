@@ -16,7 +16,6 @@ def main():
 
     client = SensorClient(addr, server_port=server_port, callback_objects=[OpenVR()])
 
-    # Run frame generator for sender
     framegen = XwdFrameGenerator(client.msg_buf)
 
     framegen.start()
@@ -28,5 +27,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(main())
