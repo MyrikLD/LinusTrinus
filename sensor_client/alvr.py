@@ -275,8 +275,8 @@ class SensorClient(Thread):
 
             if not self.msg_buf.empty():
                 image = self.msg_buf.get()
-                fecPercentage = 5
-                result = FECSend(image, len(image), fecPercentage)
+                fec_percentage = 5
+                result = FECSend(image, len(image), fec_percentage)
 
                 vf = VideoFrame(
                     packetCounter=self.packetCounter,
@@ -285,7 +285,7 @@ class SensorClient(Thread):
                     sentTime=self.timestamp(),
                     frameByteSize=len(image),
                     fecIndex=0,
-                    fecPercentage=fecPercentage,
+                    fecPercentage=fec_percentage,
                 )
 
                 ALVR_MAX_PACKET_SIZE = 1400
