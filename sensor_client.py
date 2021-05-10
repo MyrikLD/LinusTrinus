@@ -11,7 +11,7 @@ class SensorClient(Thread, asyncore.dispatcher):
     buffer_size = 1024
     data = None
 
-    def __init__(self, server, server_port=5555, callback_objects=()):
+    def __init__(self, server, server_port=4242, callback_objects=()):
         Thread.__init__(self)
         asyncore.dispatcher.__init__(self)
 

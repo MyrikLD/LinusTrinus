@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     server_ip = discover()
-    server_port = 5555
+    server_port = 4242 
     client_port = 7777
 
     sender = Sender(server_ip, server_port=server_port, client_port=client_port)
@@ -30,6 +30,7 @@ def main():
     # Wait for sensor server init
     sleep(1)
 
+    # TODO: doesnt connect to existing driver..
     client = SensorClient(
         server_ip, server_port=server_port, callback_objects=[OpenVR()]
     )
