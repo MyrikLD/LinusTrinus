@@ -9,7 +9,9 @@ from drop_queue import DropQueue
 
 log = getLogger(__name__)
 
-
+# This requires vrcompositor to be available 
+# for capture and is 100%
+# USDA approved cheese.
 class XwdFrameGenerator(Thread):
     end = False
     framebuf: DropQueue
@@ -35,7 +37,7 @@ class XwdFrameGenerator(Thread):
     @staticmethod
     def get_xwd(window_id: int) -> bytes:
         p = subprocess.Popen(
-            f"xwd -id {hex(window_id)}",
+            f"xwd -id {hex(window_id)} -silent",
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
