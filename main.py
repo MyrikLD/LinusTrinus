@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     server_ip = discover()
-    server_port = 4242 
+    server_port = 5555
     client_port = 7777
 
     sender = Sender(server_ip, server_port=server_port, client_port=client_port)
