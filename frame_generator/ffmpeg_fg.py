@@ -1,3 +1,4 @@
+import os
 import subprocess
 from logging import getLogger
 from threading import Thread
@@ -46,7 +47,7 @@ class FfmpegFrameGenerator(Thread):
             "loglevel": "error",
             "s": self.size,
             "framerate": self.framerate,
-            "i": ":0.0+0,0",
+            "i": "%s+0,0" % os.getenv("DISPLAY", ":0.0"),
             "f": "mjpeg",
             "vsync": self.vsync,
         }
