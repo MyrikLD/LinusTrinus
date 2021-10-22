@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import socket
-import struct
+import struct #Sample
 from pprint import pformat
 from threading import Thread
 
