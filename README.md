@@ -12,13 +12,14 @@ TrinusVR screen streaming server for Linux
 
 ## Dependencies
 
+* [ffmpeg](https://command-not-found.com/ffmpeg)
+* [xwininfo](https://command-not-found.com/xwininfo)
+* [xwd](https://command-not-found.com/xwd)
 * Python3 / Pypy3
-* evdev (optional)
-* ffmpeg
-* wand
-* xwd
-* xwininfo
-* TrinusVR android client (tested on 2.2.1)
+* Python packages:
+    * [wand](https://pypi.org/project/Wand/)
+    * [evdev](https://pypi.org/project/evdev/) (optional)
+* [TrinusVR](https://www.trinusvirtualreality.com/) Android client (tested on 2.2.1)
 
 ## Running
 
