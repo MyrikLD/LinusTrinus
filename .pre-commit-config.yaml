@@ -1,0 +1,36 @@
+repos:
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.2.4
+    hooks:
+    - id: python-safety-dependencies-check
+
+  - repo: 'https://github.com/asottile/reorder_python_imports'
+    rev: v3.0.1
+    hooks:
+      - id: reorder-python-imports
+        name: 'Reorder Python imports'
+
+  - repo: https://github.com/ambv/black
+    rev: 22.3.0
+    hooks:
+    - id: black
+      language_version: python3.9
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: check-merge-conflict
+    - id: requirements-txt-fixer
+
+  - repo: https://github.com/sondrelg/pep585-upgrade
+    rev: 'v1'  # Use the sha / tag you want to point at
+    hooks:
+    - id: upgrade-type-hints
+      args: [ '--futures=true' ]
+
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+    - id: flake8
