@@ -69,8 +69,9 @@ for your PC while the phone stays connected will be your phone's data plan.
 
 1. In terminal install system dependencies:
     ```sh
-    yay -S ffmpeg openvr
-    yay -S xorg-xwd xorg-xwininfo   # for Ubuntu: `sudo apt install x11-apps`
+    pacman -S git python3 make cmake gcc glew qt5-base imagemagick # if you are on a fresh install e.g. inside Distrobox
+    pacman -S ffmpeg openvr
+    pacman -S xorg-xwd xorg-xwininfo   # for Ubuntu: `sudo apt install x11-apps`
     ```
 1. clone this repo:
     ```sh
@@ -83,6 +84,10 @@ for your PC while the phone stays connected will be your phone's data plan.
     python3 -m venv .venv           # optional to install locally
     source .venv/bin/activate       # and not in `/usr/lib/python*/blah/...`
     pip install frame-generator wand
+    ```
+1. Bind mount the SteamVR directory to the default Steam install directory, if you have it installed elsewhere:
+    ```sh
+    mount --bind <SteamVR_install_directory> "$HOME/.steam/steam/common/SteamVR"
     ```
 1. Compile and install driver for SteamVR:
     ```sh
