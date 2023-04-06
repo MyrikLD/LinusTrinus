@@ -12,8 +12,8 @@ class FfmpegFrameGenerator(Thread):
     end = False
     framebuf: DropQueue
 
-    width = 800 * 2
-    height = 600
+    width = 1366
+    height = 768
 
     framerate = 30
     optirun = False
